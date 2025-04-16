@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages - KinetiCore</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .message-card {
+      margin-bottom: 1rem;
+      border-left: 4px solid #00796b;
+      transition: transform 0.2s;
+    }
+    .message-card:hover {
+      transform: translateX(5px);
+    }
+    .message-time {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+    .message-content {
+      font-size: 1rem;
+      color: #333;
+    }
+    #messagesList {
+      padding: 1rem;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
+  <script src="firebase.js"></script>
+</head>
+<body>
+  <!-- Background circles -->
+  <div class="circle circle-1"></div>
+  <div class="circle circle-2"></div>
+  <div class="circle circle-3"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #b2dfdb; z-index: 2;">
+    <div class="container">
+      <a class="navbar-brand" href="HomePatients.html">KinetiCore</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="liveMonitor.html">Live Monitor</a></li>
+          <li class="nav-item"><a class="nav-link active" href="Messages.html">Messages</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card fade-in">
+          <div class="card-body p-4">
+            <h3 class="text-center mb-4">Messages from Your Doctor</h3>
+            <div id="messagesList" class="mb-3" style="max-height: 400px; overflow-y: auto;">
+              <!-- Messages will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check if user is logged in and is a patient
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        const userRef = database.ref('users/' + user.uid);
+        userRef.once('value', (snapshot) => {
+          const userData = snapshot.val();
+          if (userData.userType !== 'patient') {
+            alert('Only patients can access this page.');
+            window.location.href = 'Login.html';
+          } else {
+            loadMessages(user.uid);
+          }
+        });
+      } else {
+        window.location.href = 'Login.html';
+      }
+    });
+
+    function loadMessages(patientId) {
+      // First try to get messages from the patient's account
+      database.ref('users/' + patientId + '/messages')
+        .once('value', (snapshot) => {
+          const messagesList = document.getElementById('messagesList');
+          messagesList.innerHTML = '';
+          
+          let hasMessages = false;
+          
+          snapshot.forEach((childSnapshot) => {
+            const messageData = childSnapshot.val();
+            hasMessages = true;
+            const messageCard = document.createElement('div');
+            messageCard.className = 'card message-card';
+            messageCard.innerHTML = `
+              <div class="card-body">
+                <div class="message-content">${messageData.text || messageData.message || ''}</div>
+                <div class="message-time">${new Date(parseInt(childSnapshot.key)).toLocaleString()}</div>
+              </div>
+            `;
+            messagesList.appendChild(messageCard);
+          });
+
+          if (!hasMessages) {
+            // If no messages in patient's account, try the global messages collection
+            database.ref('messages')
+              .orderByChild('timestamp')
+              .on('value', (snapshot) => {
+                messagesList.innerHTML = '';
+                let hasGlobalMessages = false;
+                
+                snapshot.forEach((childSnapshot) => {
+                  const message = childSnapshot.val();
+                  if (message.recipientId === patientId) {
+                    hasGlobalMessages = true;
+                    const messageCard = document.createElement('div');
+                    messageCard.className = 'card message-card';
+                    messageCard.innerHTML = `
+                      <div class="card-body">
+                        <div class="message-content">${message.text || message.message || ''}</div>
+                        <div class="message-time">${new Date(message.timestamp).toLocaleString()}</div>
+                      </div>
+                    `;
+                    messagesList.appendChild(messageCard);
+                  }
+                });
+
+                if (!hasGlobalMessages) {
+                  messagesList.innerHTML = '<div class="text-center">No messages yet.</div>';
+                }
+              });
+          }
+          
+          messagesList.scrollTop = messagesList.scrollHeight;
+        });
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

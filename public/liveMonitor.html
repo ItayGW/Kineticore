@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Monitor - KinetiCore</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script> 
+  <script src="firebase.js"></script>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="HomePatients.html">KinetiCore</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="Messages.html">Messages</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+    <div class="row">
+      <div class="col-md-12 text-center mb-4">
+        <h1>Live Health Monitor</h1>
+        <p class="lead">Real-time health metrics and sensor data</p>
+      </div>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card fade-in">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">Heart Rate</h5>
+                    <p class="card-text" id="heartRate">Loading...</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">SpO2</h5>
+                    <p class="card-text" id="spo2">Loading...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">Movement Analysis</h5>
+                    <div class="row">
+                      <div class="col-md-4">
+                        <p class="card-text" id="angleX">X-Axis Angle: Loading...</p>
+                      </div>
+                      <div class="col-md-4">
+                        <p class="card-text" id="angleY">Y-Axis Angle: Loading...</p>
+                      </div>
+                      <div class="col-md-4">
+                        <p class="card-text" id="angleZ">Z-Axis Angle: Loading...</p>
+                      </div>
+                    </div>
+                    <div class="row mt-2">
+                      <div class="col-12">
+                        <p class="card-text" id="totalAngle">Total Angle Change: Loading...</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row mt-4">
+              <div class="col-12 text-center">
+                <button id="toggleRecording" class="btn btn-primary">
+                  <span class="button-text">Start Recording</span>
+                  <div class="spinner-border spinner-border-sm d-none" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let curr = 0;
+    let userRef;
+    let prevAccel = { x: 0, y: 0, z: 0 };
+    let lastUpdateTime = Date.now();
+
+    // Function to calculate angle between two vectors
+    function calculateAngle(v1, v2) {
+      const dotProduct = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+      const magnitude1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
+      const magnitude2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z);
+      const cosTheta = dotProduct / (magnitude1 * magnitude2);
+      return Math.acos(cosTheta) * (180 / Math.PI); // Convert to degrees
+    }
+
+    // Check if user is logged in and is a patient
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        userRef = database.ref('users/' + user.uid);
+        userRef.once('value', (snapshot) => {
+          const userData = snapshot.val();
+          if (userData.userType !== 'patient') {
+            alert('Only patients can access this page.');
+            window.location.href = 'Login.html';
+          } else {
+            // Set up real-time data listener
+            const sensorRef = database.ref('users/' + user.uid + '/sensorData');
+            sensorRef.on('value', (snapshot) => {
+              const data = snapshot.val();
+              if (data) {
+                document.getElementById('heartRate').textContent = data.heart_rate || 'N/A';
+                document.getElementById('spo2').textContent = data.spo2 || 'N/A';
+
+                // Calculate angle changes
+                const currentTime = Date.now();
+                const timeDiff = (currentTime - lastUpdateTime) / 1000; // Convert to seconds
+                
+                if (timeDiff > 0) {
+                  const currentAccel = {
+                    x: parseFloat(data.accel_x) || 0,
+                    y: parseFloat(data.accel_y) || 0,
+                    z: parseFloat(data.accel_z) || 0
+                  };
+
+                  // Calculate change in acceleration
+                  const deltaAccel = {
+                    x: currentAccel.x - prevAccel.x,
+                    y: currentAccel.y - prevAccel.y,
+                    z: currentAccel.z - prevAccel.z
+                  };
+
+                  // Calculate angles
+                  const angleX = Math.atan2(deltaAccel.y, deltaAccel.z) * (180 / Math.PI);
+                  const angleY = Math.atan2(deltaAccel.x, deltaAccel.z) * (180 / Math.PI);
+                  const angleZ = Math.atan2(deltaAccel.x, deltaAccel.y) * (180 / Math.PI);
+
+                  // Calculate total angle change
+                  const totalAngle = calculateAngle(prevAccel, currentAccel);
+
+                  // Update display
+                  document.getElementById('angleX').textContent = `X-Axis Angle: ${angleX.toFixed(2)}°`;
+                  document.getElementById('angleY').textContent = `Y-Axis Angle: ${angleY.toFixed(2)}°`;
+                  document.getElementById('angleZ').textContent = `Z-Axis Angle: ${angleZ.toFixed(2)}°`;
+                  document.getElementById('totalAngle').textContent = `Total Angle Change: ${totalAngle.toFixed(2)}°`;
+
+                  // Update previous values
+                  prevAccel = currentAccel;
+                  lastUpdateTime = currentTime;
+                }
+              }
+            });
+
+            // Get initial curr value
+            userRef.once('value', (snapshot) => {
+              const data = snapshot.val();
+              curr = data.curr || 0;
+              updateButtonState();
+            });
+          }
+        });
+      } else {
+        window.location.href = 'Login.html';
+      }
+    });
+
+    // Handle recording toggle
+    document.getElementById('toggleRecording').addEventListener('click', () => {
+      const button = document.getElementById('toggleRecording');
+      const buttonText = button.querySelector('.button-text');
+      const spinner = button.querySelector('.spinner-border');
+      
+      // Show loading state
+      button.disabled = true;
+      spinner.classList.remove('d-none');
+      
+      // Toggle curr value
+      curr = curr === 0 ? 1 : 0;
+      
+      // Update Firebase
+      userRef.update({ curr })
+        .then(() => {
+          updateButtonState();
+        })
+        .catch((error) => {
+          console.error('Error updating recording state:', error);
+          alert('Failed to update recording state. Please try again.');
+        })
+        .finally(() => {
+          // Hide loading state
+          button.disabled = false;
+          spinner.classList.add('d-none');
+        });
+    });
+
+    function updateButtonState() {
+      const button = document.getElementById('toggleRecording');
+      const buttonText = button.querySelector('.button-text');
+      
+      if (curr === 1) {
+        button.classList.remove('btn-primary');
+        button.classList.add('btn-danger');
+        buttonText.textContent = 'Stop Recording';
+      } else {
+        button.classList.remove('btn-danger');
+        button.classList.add('btn-primary');
+        buttonText.textContent = 'Start Recording';
+      }
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
