@@ -22,14 +22,16 @@
   <div class="circle circle-2"></div>
   <div class="circle circle-3"></div>
 
-  <!-- טופס הרשמה -->
+  <!-- תוכן ראשי -->
   <div class="container mt-5">
     <div class="row justify-content-center">
       <div class="col-md-6">
+        <!-- כרטיס הרשמה -->
         <div class="card">
           <div class="card-body">
-            <!-- כותרת הטופס -->
-            <h2 class="card-title text-center mb-4">Sign Up for KinetiCore</h2>
+            <!-- כותרת -->
+            <h2 class="text-center mb-4">Sign Up</h2>
+            
             <!-- טופס הרשמה -->
             <form id="signupForm">
               <!-- שדה שם מלא -->
@@ -37,26 +39,29 @@
                 <label for="fullName" class="form-label">Full Name</label>
                 <input type="text" class="form-control" id="fullName" required>
               </div>
+              
               <!-- שדה אימייל -->
               <div class="mb-3">
-                <label for="email" class="form-label">Email address</label>
+                <label for="email" class="form-label">Email</label>
                 <input type="email" class="form-control" id="email" required>
               </div>
+              
               <!-- שדה סיסמה -->
               <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
                 <input type="password" class="form-control" id="password" required>
               </div>
+              
               <!-- שדה אימות סיסמה -->
               <div class="mb-3">
                 <label for="confirmPassword" class="form-label">Confirm Password</label>
                 <input type="password" class="form-control" id="confirmPassword" required>
               </div>
-              <!-- כפתור שליחה -->
-              <div class="d-grid">
-                <button type="submit" class="btn btn-primary">Sign Up</button>
-              </div>
+              
+              <!-- כפתור הרשמה -->
+              <button type="submit" class="btn btn-primary w-100">Sign Up</button>
             </form>
+            
             <!-- קישור להתחברות -->
             <div class="text-center mt-3">
               <p>Already have an account? <a href="Login.html">Login</a></p>
@@ -70,42 +75,42 @@
   <!-- ספריית Bootstrap -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- קוד JavaScript להרשמה -->
+  <!-- קוד JavaScript -->
   <script>
-    // האזנה לשליחת טופס ההרשמה
-    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    // טיפול בשליחת טופס ההרשמה
+    document.getElementById('signupForm').addEventListener('submit', (e) => {
       e.preventDefault();
       
-      // קבלת ערכי השדות
+      // קבלת ערכים מהטופס
       const fullName = document.getElementById('fullName').value;
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
-
+      
       // בדיקת התאמת סיסמאות
       if (password !== confirmPassword) {
         alert('Passwords do not match');
         return;
       }
-
-      try {
-        // יצירת משתמש חדש ב-Firebase
-        const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-
-        // שמירת פרטי המשתמש במסד הנתונים
-        await firebase.database().ref('users/' + user.uid).set({
-          fullName: fullName,
-          email: email,
-          role: 'doctor'
+      
+      // יצירת משתמש חדש
+      firebase.auth().createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          // שמירת נתוני המשתמש במסד הנתונים
+          const user = userCredential.user;
+          return firebase.database().ref('users/' + user.uid).set({
+            fullName: fullName,
+            email: email,
+            role: 'patient'
+          });
+        })
+        .then(() => {
+          // העברה לדף הבית של המטופל
+          window.location.href = 'HomePatients.html';
+        })
+        .catch((error) => {
+          alert('Error: ' + error.message);
         });
-
-        // הפניה לדף הבית של רופאים
-        window.location.href = 'HomeDoctors.html';
-      } catch (error) {
-        // טיפול בשגיאות הרשמה
-        alert('Error: ' + error.message);
-      }
     });
   </script>
 </body>

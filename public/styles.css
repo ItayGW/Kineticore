@@ -1,5 +1,6 @@
+/* הגדרות משתנים גלובליים */
 :root {
-  /* Color Palette */
+  /* פלטת צבעים */
   --primary-color: #00796b;
   --primary-dark: #004d40;
   --primary-light: #b2dfdb;
@@ -15,7 +16,7 @@
   --background-light: #f5f5f5;
   --white: #ffffff;
   
-  /* Typography */
+  /* טיפוגרפיה */
   --font-family: 'Roboto', sans-serif;
   --font-size-base: 16px;
   --font-size-h1: 2.5rem;
@@ -25,25 +26,25 @@
   --font-size-h5: 1.25rem;
   --font-size-h6: 1rem;
   
-  /* Spacing */
+  /* מרווחים */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
   
-  /* Border Radius */
+  /* רדיוס גבול */
   --border-radius-sm: 4px;
   --border-radius-md: 8px;
   --border-radius-lg: 16px;
   
-  /* Shadows */
+  /* צללים */
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
   --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
   --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
 }
 
-/* General Styles */
+/* סגנונות כלליים */
 body {
   font-family: 'Roboto', sans-serif;
   background-color: #f5f5f5;
@@ -52,7 +53,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Typography */
+/* טיפוגרפיה */
 h1, h2, h3, h4, h5, h6 {
   margin-bottom: var(--spacing-md);
   font-weight: 500;
@@ -65,7 +66,7 @@ h4 { font-size: var(--font-size-h4); }
 h5 { font-size: var(--font-size-h5); }
 h6 { font-size: var(--font-size-h6); }
 
-/* Cards */
+/* כרטיסים */
 .card {
   border-radius: 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -79,7 +80,7 @@ h6 { font-size: var(--font-size-h6); }
   padding: 2rem;
 }
 
-/* Buttons */
+/* כפתורים */
 .btn {
   border-radius: 25px;
   padding: 8px 20px;
@@ -98,7 +99,7 @@ h6 { font-size: var(--font-size-h6); }
   transform: translateY(-2px);
 }
 
-/* Forms */
+/* טפסים */
 .form-control {
   border-radius: 25px;
   padding: 10px 20px;
@@ -110,7 +111,7 @@ h6 { font-size: var(--font-size-h6); }
   box-shadow: 0 0 0 0.2rem rgba(0, 121, 107, 0.25);
 }
 
-/* Navigation */
+/* ניווט */
 .navbar {
   background-color: #b2dfdb;
   padding: 1rem 0;
@@ -138,14 +139,14 @@ h6 { font-size: var(--font-size-h6); }
   font-weight: 700;
 }
 
-/* Layout */
+/* פריסה */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 var(--spacing-md);
 }
 
-/* Responsive Design */
+/* עיצוב רספונסיבי */
 @media (max-width: 768px) {
   :root {
     --font-size-h1: 2rem;
@@ -184,7 +185,7 @@ h6 { font-size: var(--font-size-h6); }
   }
 }
 
-/* Animations */
+/* אנימציות */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -200,7 +201,7 @@ h6 { font-size: var(--font-size-h6); }
   animation: fadeIn 0.5s ease-in;
 }
 
-/* Utility Classes */
+/* מחלקות עזר */
 .text-center { text-align: center; }
 .text-right { text-align: right; }
 .text-left { text-align: left; }
@@ -217,7 +218,7 @@ h6 { font-size: var(--font-size-h6); }
 .mb-4 { margin-bottom: var(--spacing-lg); }
 .mb-5 { margin-bottom: var(--spacing-xl); }
 
-/* Social Media Icons */
+/* סמלי רשתות חברתיות */
 .social-icon {
   color: var(--text-primary);
   transition: color 0.3s ease, transform 0.3s ease;
@@ -228,7 +229,7 @@ h6 { font-size: var(--font-size-h6); }
   transform: translateY(-3px);
 }
 
-/* About Page Styles */
+/* סגנונות דף אודות */
 .about-content p {
   line-height: 1.8;
   color: var(--text-secondary);
@@ -250,69 +251,10 @@ h6 { font-size: var(--font-size-h6); }
   background-color: var(--primary-color);
 }
 
-/* Footer Links */
-footer a {
-  color: var(--text-secondary);
-  transition: color 0.3s ease;
-}
-
-footer a:hover {
-  color: var(--primary-color);
-  text-decoration: none;
-}
-
-/* Table Styles */
-.table {
-  background-color: white;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.table thead th {
-  background-color: #00796b;
-  color: white;
-  border: none;
-}
-
-.table tbody tr:hover {
-  background-color: #f5f5f5;
-}
-
-/* Background Circles */
-.circle {
-  position: fixed;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #b2dfdb, #80cbc4);
-  opacity: 0.1;
-  z-index: 1;
-}
-
-.circle-1 {
-  width: 300px;
-  height: 300px;
-  top: -100px;
-  right: -100px;
-}
-
-.circle-2 {
-  width: 200px;
-  height: 200px;
-  bottom: -50px;
-  left: -50px;
-}
-
-.circle-3 {
-  width: 150px;
-  height: 150px;
-  top: 50%;
-  right: 10%;
-}
-
-/* Message Styles */
+/* סגנונות כרטיסי הודעות */
 .message-card {
-  margin-bottom: 1rem;
-  border-left: 4px solid #00796b;
-  transition: transform 0.2s;
+  border-left: 4px solid var(--primary-color);
+  transition: transform 0.3s ease;
 }
 
 .message-card:hover {
@@ -321,31 +263,76 @@ footer a:hover {
 
 .message-time {
   font-size: 0.8rem;
-  color: #666;
-  margin-top: 0.5rem;
+  color: var(--text-secondary);
 }
 
 .message-content {
   font-size: 1rem;
-  color: #333;
+  color: var(--text-primary);
 }
 
-#messagesList {
-  padding: 1rem;
+/* סגנונות טבלאות */
+.table {
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
 }
 
-/* Alert Styles */
+.table thead th {
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.table tbody tr:hover {
+  background-color: var(--background-light);
+}
+
+/* סגנונות עיגולים דקורטיביים */
+.circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.1;
+  z-index: -1;
+}
+
+.circle-1 {
+  width: 300px;
+  height: 300px;
+  background-color: var(--primary-color);
+  top: -100px;
+  right: -100px;
+}
+
+.circle-2 {
+  width: 200px;
+  height: 200px;
+  background-color: var(--secondary-color);
+  bottom: -50px;
+  left: -50px;
+}
+
+.circle-3 {
+  width: 150px;
+  height: 150px;
+  background-color: var(--accent-color);
+  top: 50%;
+  right: 10%;
+}
+
+/* סגנונות התראות */
 .alert {
-  border-radius: 10px;
-  border: none;
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
 }
 
 .alert-success {
-  background-color: #c8e6c9;
-  color: #2e7d32;
+  background-color: var(--success-color);
+  color: white;
 }
 
 .alert-danger {
-  background-color: #ffcdd2;
-  color: #c62828;
+  background-color: var(--error-color);
+  color: white;
 } 

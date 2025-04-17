@@ -1,4 +1,4 @@
-// Firebase configuration
+// הגדרות Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCUHUAwhenz_p25Rc3gwxif9rBsqM_RJdk",
   authDomain: "kineticore-67d30.firebaseapp.com",
@@ -9,26 +9,27 @@ const firebaseConfig = {
   appId: "1:46174776153:web:c6b7ec4e8b5e049923fa48"
 };
 
-// Initialize Firebase
+// אתחול Firebase
 let app;
 try {
   app = firebase.initializeApp(firebaseConfig);
 } catch (error) {
-  // Silently handle initialization error
+  // טיפול בשגיאת אתחול
 }
 
 const auth = firebase.auth();
 const database = firebase.database();
 
-// Check if Firebase is properly initialized
+// בדיקת אתחול Firebase
 if (!app) {
   console.error('Firebase app not initialized');
   alert('Error: Firebase not initialized. Please refresh the page.');
 }
 
 /**
-* @param {string} email 
-* @param {string} password 
+* התחברות משתמש
+* @param {string} email - כתובת אימייל
+* @param {string} password - סיסמה
 */
 function loginUser(email, password) {
   return new Promise((resolve, reject) => {
@@ -36,7 +37,7 @@ function loginUser(email, password) {
       .then((userCredential) => {
         const user = userCredential.user;
 
-        // Fetch user type from Realtime Database
+        // שליפת סוג המשתמש ממסד הנתונים
         const userRef = database.ref('users/' + user.uid);
         userRef.once('value')
           .then((snapshot) => {
@@ -48,7 +49,7 @@ function loginUser(email, password) {
 
             const userType = userData.userType;
 
-            // Redirect based on user type
+            // הפנייה לפי סוג המשתמש
             if (userType === 'doctor') {
               window.location.href = 'HomeDoctors.html';
               resolve();
@@ -70,12 +71,12 @@ function loginUser(email, password) {
 }
 
 /**
-* Signs up the user and saves their data (fullName and userType) in the Realtime Database.
-* @param {string} fullName - The full name of the user.
-* @param {string} email - The email address of the user.
-* @param {string} password - The password of the user.
-* @param {string} confirmPassword - The confirmation of the password.
-* @param {string} userType - The type of user (doctor or patient).
+* הרשמת משתמש ושמירת נתוניו במסד הנתונים
+* @param {string} fullName - שם מלא
+* @param {string} email - כתובת אימייל
+* @param {string} password - סיסמה
+* @param {string} confirmPassword - אימות סיסמה
+* @param {string} userType - סוג משתמש (רופא או מטופל)
 */
 function signUpUser(fullName, email, password, confirmPassword, userType) {
   if (password !== confirmPassword) {
@@ -87,7 +88,7 @@ function signUpUser(fullName, email, password, confirmPassword, userType) {
       .then((userCredential) => {
           const user = userCredential.user;
 
-          // Save user data to Realtime Database
+          // שמירת נתוני המשתמש במסד הנתונים
           database.ref('users/' + user.uid).set({
               fullName: fullName,
               email: email,
@@ -105,7 +106,7 @@ function signUpUser(fullName, email, password, confirmPassword, userType) {
       });
 }
 
-// Function to sign up a doctor
+// הרשמת רופא
 function signUpDoctor(email, password, name, medicalLicense, specialization) {
   return new Promise((resolve, reject) => {
     auth.createUserWithEmailAndPassword(email, password)
@@ -131,14 +132,14 @@ function signUpDoctor(email, password, name, medicalLicense, specialization) {
   });
 }
 
-// Function to create a patient account
+// יצירת חשבון מטופל
 function createPatientAccount(email, password, name, doctorId) {
   return new Promise((resolve, reject) => {
-    // First, add the patient to the doctor's patient list
+    // הוספת המטופל לרשימת המטופלים של הרופא
     database.ref('users/' + doctorId + '/patients').once('value')
       .then((snapshot) => {
         const patients = snapshot.val() || {};
-        const tempPatientId = 'temp_' + Date.now(); // Temporary ID
+        const tempPatientId = 'temp_' + Date.now(); // מזהה זמני
         patients[tempPatientId] = {
           name: name,
           email: email,
@@ -148,16 +149,16 @@ function createPatientAccount(email, password, name, doctorId) {
           .then(() => tempPatientId);
       })
       .then((tempPatientId) => {
-        // Create a new auth instance for patient creation
+        // יצירת מופע אימות זמני ליצירת המטופל
         const tempApp = firebase.initializeApp(firebaseConfig, 'temp');
         const tempAuth = tempApp.auth();
         
-        // Create the patient account
+        // יצירת חשבון המטופל
         return tempAuth.createUserWithEmailAndPassword(email, password)
           .then((userCredential) => {
             const patientUser = userCredential.user;
             
-            // Update the patient data
+            // עדכון נתוני המטופל
             return database.ref('users/' + patientUser.uid).set({
               name: name,
               email: email,
@@ -165,7 +166,7 @@ function createPatientAccount(email, password, name, doctorId) {
               doctorId: doctorId
             })
             .then(() => {
-              // Update the doctor's patient list with the real patient ID
+              // עדכון רשימת המטופלים של הרופא עם המזהה האמיתי
               return database.ref('users/' + doctorId + '/patients').once('value')
                 .then((snapshot) => {
                   const patients = snapshot.val();
@@ -180,7 +181,7 @@ function createPatientAccount(email, password, name, doctorId) {
                 });
             })
             .then(() => {
-              // Sign out and delete the temporary auth instance
+              // התנתקות ומחיקת מופע האימות הזמני
               return tempAuth.signOut()
                 .then(() => {
                   tempApp.delete();
@@ -192,7 +193,7 @@ function createPatientAccount(email, password, name, doctorId) {
         resolve();
       })
       .catch((error) => {
-        // Clean up the temporary patient entry if there was an error
+        // ניקוי רשומת המטופל הזמנית במקרה של שגיאה
         database.ref('users/' + doctorId + '/patients').once('value')
           .then((snapshot) => {
             const patients = snapshot.val();
@@ -211,7 +212,7 @@ function createPatientAccount(email, password, name, doctorId) {
   });
 }
 
-// Function to get a list of patients for a doctor
+// קבלת רשימת מטופלים של רופא
 function getDoctorPatients(doctorId) {
   return new Promise((resolve, reject) => {
     database.ref('users/' + doctorId + '/patients').once('value')
@@ -232,7 +233,7 @@ function getDoctorPatients(doctorId) {
   });
 }
 
-// Function to get a patient's doctor
+// קבלת הרופא של מטופל
 function getPatientDoctor(patientId) {
   return new Promise((resolve, reject) => {
     database.ref('users/' + patientId).once('value')
@@ -252,115 +253,100 @@ function getPatientDoctor(patientId) {
         });
       })
       .catch((error) => {
-        console.error('Error getting patient doctor:', error);
         reject(error);
       });
   });
 }
 
-// Function to send a message
+// שליחת הודעה
 function sendMessage(recipientId, message) {
   return new Promise((resolve, reject) => {
-    const user = auth.currentUser;
-    if (!user) {
-      reject('No user is currently logged in.');
-      return;
-    }
-
-    const messageRef = database.ref('messages').push();
-    messageRef.set({
-      senderId: user.uid,
+    const senderId = auth.currentUser.uid;
+    const timestamp = Date.now();
+    
+    database.ref('messages').push({
+      senderId: senderId,
       recipientId: recipientId,
       message: message,
-      timestamp: firebase.database.ServerValue.TIMESTAMP
+      timestamp: timestamp
     })
     .then(() => {
-      resolve('Message sent successfully');
+      resolve();
     })
     .catch((error) => {
-      console.error('Error sending message:', error);
-      reject('Failed to send message');
+      reject(error);
     });
   });
 }
 
-// Function to get messages
+// קבלת הודעות
 function getMessages(recipientId) {
   return new Promise((resolve, reject) => {
-    const user = auth.currentUser;
-    if (!user) {
-      reject('No user is currently logged in.');
-      return;
-    }
-
-    const messagesRef = database.ref('messages')
-      .orderByChild('timestamp')
-      .limitToLast(50);
-
-    messagesRef.once('value', (snapshot) => {
-      const messages = [];
-      snapshot.forEach((childSnapshot) => {
-        const message = childSnapshot.val();
-        if ((message.senderId === user.uid && message.recipientId === recipientId) ||
-            (message.senderId === recipientId && message.recipientId === user.uid)) {
+    database.ref('messages')
+      .orderByChild('recipientId')
+      .equalTo(recipientId)
+      .once('value')
+      .then((snapshot) => {
+        const messages = [];
+        snapshot.forEach((childSnapshot) => {
           messages.push({
             id: childSnapshot.key,
-            ...message
+            ...childSnapshot.val()
           });
-        }
+        });
+        resolve(messages);
+      })
+      .catch((error) => {
+        reject(error);
       });
-      resolve(messages);
-    }, (error) => {
-      console.error('Error getting messages:', error);
-      reject('Failed to get messages');
-    });
   });
 }
 
-// Function to check user type and redirect
+// בדיקת סוג משתמש והפניה לדף המתאים
 function checkUserTypeAndRedirect() {
   const user = auth.currentUser;
   if (user) {
-    const userRef = database.ref('users/' + user.uid);
-    userRef.once('value', (snapshot) => {
-      const userData = snapshot.val();
-      if (userData) {
+    database.ref('users/' + user.uid).once('value')
+      .then((snapshot) => {
+        const userData = snapshot.val();
         if (userData.userType === 'doctor') {
           window.location.href = 'HomeDoctors.html';
         } else if (userData.userType === 'patient') {
           window.location.href = 'HomePatients.html';
         }
-      } else {
-        window.location.href = 'Login.html';
-      }
-    });
-  } else {
-    window.location.href = 'Login.html';
+      })
+      .catch((error) => {
+        console.error('Error checking user type:', error);
+      });
   }
 }
 
-// Function to create a new user without signing them in
+// יצירת משתמש חדש
 function createUser(email, password, userData) {
   return new Promise((resolve, reject) => {
-    // Create a temporary auth instance
-    const tempAuth = firebase.auth();
+    // יצירת מופע אימות זמני
+    const tempApp = firebase.initializeApp(firebaseConfig, 'temp');
+    const tempAuth = tempApp.auth();
     
-    // Create the user
+    // יצירת המשתמש
     tempAuth.createUserWithEmailAndPassword(email, password)
       .then((userCredential) => {
         const user = userCredential.user;
         
-        // Set the user data
+        // שמירת נתוני המשתמש
         return database.ref('users/' + user.uid).set(userData)
           .then(() => {
-            // Sign out the temporary auth
-            return tempAuth.signOut();
-          })
-          .then(() => {
-            resolve(user.uid);
+            // התנתקות ומחיקת המופע הזמני
+            return tempAuth.signOut()
+              .then(() => {
+                tempApp.delete();
+                resolve(user.uid);
+              });
           });
       })
       .catch((error) => {
+        // ניקוי במקרה של שגיאה
+        tempApp.delete();
         reject(error);
       });
   });

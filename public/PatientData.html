@@ -1,113 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- הגדרות בסיסיות -->
   <meta charset="UTF-8">
+  <!-- הגדרות תצוגה למובייל -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Patient Data - KinetiCore</title>
+  <!-- קישור לספריות חיצוניות -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <!-- קישור לספריות Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
   <script src="firebase.js"></script>
 </head>
 <body>
-  <!-- Background circles -->
+  <!-- אלמנטים דקורטיביים -->
   <div class="circle circle-1"></div>
   <div class="circle circle-2"></div>
   <div class="circle circle-3"></div>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #b2dfdb; z-index: 2;">
-    <div class="container">
-      <a class="navbar-brand" href="HomeDoctors.html">KinetiCore</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="patientList.html">Patient List</a></li>
-          <li class="nav-item"><a class="nav-link" href="addPatient.html">Add Patient</a></li>
-          <li class="nav-item"><a class="nav-link" href="index.html">Logout</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <div class="container py-5">
+  <!-- תוכן ראשי -->
+  <div class="container mt-5">
     <div class="row justify-content-center">
-      <div class="col-md-10">
-        <div class="card fade-in">
-          <div class="card-body p-4">
-            <h3 class="text-center mb-4" id="patientName">Patient Data</h3>
-            
-            <!-- Basic Information Section -->
-            <div class="row mb-4">
-              <div class="col-md-6">
-                <h5>Basic Information</h5>
-                <p><strong>Email:</strong> <span id="patientEmail"></span></p>
-                <p><strong>Last Login:</strong> <span id="lastLogin"></span></p>
-              </div>
-              <div class="col-md-6">
-                <h5>Recent Activity</h5>
-                <div id="recentActivity" class="mb-3">
-                  <!-- Activity will be loaded here -->
-                </div>
-              </div>
-            </div>
-
-            <!-- Movement Analysis Section -->
-            <div class="row mb-4">
-              <div class="col-12">
-                <h5>Movement Analysis</h5>
-                <div class="row">
-                  <div class="col-md-3">
-                    <div class="card">
-                      <div class="card-body">
-                        <h6 class="card-title">X-Axis Angle</h6>
-                        <p class="card-text" id="xAngle">0°</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="card">
-                      <div class="card-body">
-                        <h6 class="card-title">Y-Axis Angle</h6>
-                        <p class="card-text" id="yAngle">0°</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="card">
-                      <div class="card-body">
-                        <h6 class="card-title">Z-Axis Angle</h6>
-                        <p class="card-text" id="zAngle">0°</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="card">
-                      <div class="card-body">
-                        <h6 class="card-title">Total Angle Change</h6>
-                        <p class="card-text" id="totalAngle">0°</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Messages Section -->
-            <div class="mt-4">
-              <h5>Messages</h5>
-              <div id="messagesList" class="mb-3" style="max-height: 300px; overflow-y: auto;">
-                <!-- Messages will be loaded here -->
-              </div>
-              <div class="input-group">
-                <input type="text" class="form-control" id="messageInput" placeholder="Type a message...">
-                <button class="btn btn-primary" id="sendMessageBtn">Send</button>
-              </div>
+      <div class="col-md-8">
+        <!-- כותרת -->
+        <h1 class="text-center mb-4">Patient Data</h1>
+        
+        <!-- כרטיס נתוני מטופל -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <!-- טבלת נתונים -->
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                    <th>Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody id="patientData">
+                  <!-- נתונים יוכנסו כאן דרך JavaScript -->
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -115,142 +53,51 @@
     </div>
   </div>
 
+  <!-- ספריית Bootstrap -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- קוד JavaScript -->
   <script>
-    // Get patient ID from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const patientId = urlParams.get('id');
-
-    // Variables for movement analysis
-    let prevAccel = { x: 0, y: 0, z: 0 };
-    let lastUpdateTime = Date.now();
-
-    // Check if user is logged in and is a doctor
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        const userRef = database.ref('users/' + user.uid);
-        userRef.once('value', (snapshot) => {
-          const userData = snapshot.val();
-          if (userData.userType !== 'doctor') {
-            alert('Only doctors can access this page.');
-            window.location.href = 'Login.html';
-          } else {
-            loadPatientData();
-            startMovementAnalysis();
-          }
-        });
-      } else {
+    // בדיקת התחברות משתמש
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        // אם המשתמש לא מחובר, העברה לדף ההתחברות
         window.location.href = 'Login.html';
+      } else {
+        // טעינת נתוני המטופל
+        loadPatientData(user.uid);
       }
     });
 
-    function loadPatientData() {
-      if (!patientId) {
-        alert('No patient ID provided');
-        window.location.href = 'patientList.html';
-        return;
-      }
-
-      // Load patient basic information
-      database.ref('users/' + patientId).once('value')
-        .then((snapshot) => {
-          const patientData = snapshot.val();
-          if (patientData) {
-            document.getElementById('patientName').textContent = patientData.name;
-            document.getElementById('patientEmail').textContent = patientData.email;
-          }
-        });
-
-      // Load messages
-      loadMessages();
-    }
-
-    function startMovementAnalysis() {
-      database.ref('sensorData/' + patientId).on('value', (snapshot) => {
+    // טעינת נתוני המטופל
+    function loadPatientData(patientId) {
+      const patientRef = firebase.database().ref('patients/' + patientId);
+      patientRef.on('value', (snapshot) => {
         const data = snapshot.val();
+        const tableBody = document.getElementById('patientData');
+        tableBody.innerHTML = '';
+        
         if (data) {
-          const currentTime = Date.now();
-          const timeDiff = (currentTime - lastUpdateTime) / 1000; // Convert to seconds
-          
-          if (timeDiff > 0) {
-            const deltaX = data.accelX - prevAccel.x;
-            const deltaY = data.accelY - prevAccel.y;
-            const deltaZ = data.accelZ - prevAccel.z;
-            
-            const angleX = calculateAngle({ x: prevAccel.x, y: prevAccel.y, z: prevAccel.z }, 
-                                        { x: data.accelX, y: data.accelY, z: data.accelZ });
-            
-            document.getElementById('xAngle').textContent = `${angleX.toFixed(2)}°`;
-            document.getElementById('yAngle').textContent = `${angleX.toFixed(2)}°`;
-            document.getElementById('zAngle').textContent = `${angleX.toFixed(2)}°`;
-            document.getElementById('totalAngle').textContent = `${(angleX * 3).toFixed(2)}°`;
-            
-            prevAccel = {
-              x: data.accelX,
-              y: data.accelY,
-              z: data.accelZ
-            };
-            lastUpdateTime = currentTime;
-          }
+          // הוספת נתונים לטבלה
+          Object.entries(data).forEach(([timestamp, metrics]) => {
+            Object.entries(metrics).forEach(([metric, value]) => {
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                <td>${metric}</td>
+                <td>${value}</td>
+                <td>${new Date(parseInt(timestamp)).toLocaleString()}</td>
+              `;
+              tableBody.appendChild(row);
+            });
+          });
+        } else {
+          // הודעת אי-קיום נתונים
+          const row = document.createElement('tr');
+          row.innerHTML = '<td colspan="3" class="text-center">No data available</td>';
+          tableBody.appendChild(row);
         }
       });
     }
-
-    function calculateAngle(v1, v2) {
-      const dotProduct = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
-      const magnitude1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
-      const magnitude2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z);
-      const angleRad = Math.acos(dotProduct / (magnitude1 * magnitude2));
-      return angleRad * (180 / Math.PI);
-    }
-
-    function loadMessages() {
-      database.ref('messages')
-        .orderByChild('timestamp')
-        .on('value', (snapshot) => {
-          const messagesList = document.getElementById('messagesList');
-          messagesList.innerHTML = '';
-          
-          snapshot.forEach((childSnapshot) => {
-            const message = childSnapshot.val();
-            if ((message.senderId === auth.currentUser.uid && message.recipientId === patientId) ||
-                (message.senderId === patientId && message.recipientId === auth.currentUser.uid)) {
-              const messageDiv = document.createElement('div');
-              messageDiv.className = `message ${message.senderId === auth.currentUser.uid ? 'sent' : 'received'}`;
-              messageDiv.innerHTML = `
-                <div class="message-content">${message.message}</div>
-                <div class="message-time">${new Date(message.timestamp).toLocaleString()}</div>
-              `;
-              messagesList.appendChild(messageDiv);
-            }
-          });
-          messagesList.scrollTop = messagesList.scrollHeight;
-        });
-    }
-
-    // Send message
-    document.getElementById('sendMessageBtn').addEventListener('click', () => {
-      const messageInput = document.getElementById('messageInput');
-      const message = messageInput.value.trim();
-      
-      if (message) {
-        sendMessage(patientId, message)
-          .then(() => {
-            messageInput.value = '';
-          })
-          .catch((error) => {
-            alert('Error sending message: ' + error.message);
-          });
-      }
-    });
-
-    // Handle Enter key in message input
-    document.getElementById('messageInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        document.getElementById('sendMessageBtn').click();
-      }
-    });
   </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

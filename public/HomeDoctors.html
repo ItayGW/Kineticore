@@ -34,10 +34,10 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <a class="nav-link" href="patientList.html">Patient List</a>
+            <a class="nav-link" href="patientList.html">Patients</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="addPatient.html">Add Patient</a>
+            <a class="nav-link" href="Messages.html">Messages</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#" id="logoutBtn">Logout</a>
@@ -58,20 +58,20 @@
       <div class="col-md-4 mb-4">
         <div class="card h-100">
           <div class="card-body text-center">
-            <h3 class="card-title">Patient List</h3>
+            <h3 class="card-title">Patients</h3>
             <p class="card-text">View and manage your patients</p>
             <a href="patientList.html" class="btn btn-primary">View Patients</a>
           </div>
         </div>
       </div>
       
-      <!-- כרטיס הוספת מטופל -->
+      <!-- כרטיס הודעות -->
       <div class="col-md-4 mb-4">
         <div class="card h-100">
           <div class="card-body text-center">
-            <h3 class="card-title">Add Patient</h3>
-            <p class="card-text">Add a new patient to your list</p>
-            <a href="addPatient.html" class="btn btn-primary">Add Patient</a>
+            <h3 class="card-title">Messages</h3>
+            <p class="card-text">Communicate with your patients</p>
+            <a href="Messages.html" class="btn btn-primary">View Messages</a>
           </div>
         </div>
       </div>
@@ -93,7 +93,7 @@
         const userRef = firebase.database().ref('users/' + user.uid);
         userRef.once('value', (snapshot) => {
           const userData = snapshot.val();
-          if (!userData || userData.role !== 'doctor') {
+          if (!userData || userData.role === 'patient') {
             // אם המשתמש אינו רופא, ניתוק והעברה לדף ההתחברות
             firebase.auth().signOut();
             window.location.href = 'Login.html';
