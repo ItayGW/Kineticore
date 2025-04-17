@@ -1,108 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- הגדרות בסיסיות -->
   <meta charset="UTF-8">
+  <!-- הגדרות תצוגה למובייל -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign Up - KinetiCore</title>
+  <!-- קישור לספריות חיצוניות -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <!-- קישור לספריות Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
   <script src="firebase.js"></script>
 </head>
 <body>
-  <!-- Background circles -->
+  <!-- אלמנטים דקורטיביים -->
   <div class="circle circle-1"></div>
   <div class="circle circle-2"></div>
   <div class="circle circle-3"></div>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #b2dfdb; z-index: 2;">
-    <div class="container">
-      <a class="navbar-brand" href="index.html">KinetiCore</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="Login.html">Login</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Main Content -->
-  <div class="container py-5">
+  <!-- טופס הרשמה -->
+  <div class="container mt-5">
     <div class="row justify-content-center">
       <div class="col-md-6">
         <div class="card">
           <div class="card-body">
-            <h2 class="card-title text-center mb-4">Sign Up</h2>
-            <div class="alert alert-info mb-4">
-              <strong>Important:</strong> To use KinetiCore as a patient, please contact your doctor to get access to the system. Your doctor will need to add you to their patient list.
-            </div>
+            <!-- כותרת הטופס -->
+            <h2 class="card-title text-center mb-4">Sign Up for KinetiCore</h2>
+            <!-- טופס הרשמה -->
             <form id="signupForm">
+              <!-- שדה שם מלא -->
               <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
+                <label for="fullName" class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="fullName" required>
+              </div>
+              <!-- שדה אימייל -->
+              <div class="mb-3">
+                <label for="email" class="form-label">Email address</label>
                 <input type="email" class="form-control" id="email" required>
               </div>
+              <!-- שדה סיסמה -->
               <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
                 <input type="password" class="form-control" id="password" required>
               </div>
+              <!-- שדה אימות סיסמה -->
               <div class="mb-3">
-                <label for="name" class="form-label">Full Name</label>
-                <input type="text" class="form-control" id="name" required>
+                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                <input type="password" class="form-control" id="confirmPassword" required>
               </div>
-              <div class="mb-3">
-                <label for="phone" class="form-label">Phone Number</label>
-                <input type="tel" class="form-control" id="phone" required>
+              <!-- כפתור שליחה -->
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Sign Up</button>
               </div>
-              <div class="mb-3">
-                <label for="birthDate" class="form-label">Birth Date</label>
-                <input type="date" class="form-control" id="birthDate" required>
-              </div>
-              <button type="submit" class="btn btn-primary w-100">Sign Up</button>
             </form>
+            <!-- קישור להתחברות -->
+            <div class="text-center mt-3">
+              <p>Already have an account? <a href="Login.html">Login</a></p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- ספריית Bootstrap -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- קוד JavaScript להרשמה -->
   <script>
-    document.getElementById('signupForm').addEventListener('submit', function(e) {
+    // האזנה לשליחת טופס ההרשמה
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      // קבלת ערכי השדות
+      const fullName = document.getElementById('fullName').value;
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      const name = document.getElementById('name').value;
-      const phone = document.getElementById('phone').value;
-      const birthDate = document.getElementById('birthDate').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
 
-      firebase.auth().createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          return firebase.database().ref('users/' + user.uid).set({
-            name: name,
-            email: email,
-            userType: 'doctor',
-            phone: phone,
-            birthDate: birthDate
-          });
-        })
-        .then(() => {
-          alert('Account created successfully!');
-          window.location.href = 'Login.html';
-        })
-        .catch((error) => {
-          alert(error.message);
+      // בדיקת התאמת סיסמאות
+      if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+      }
+
+      try {
+        // יצירת משתמש חדש ב-Firebase
+        const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        // שמירת פרטי המשתמש במסד הנתונים
+        await firebase.database().ref('users/' + user.uid).set({
+          fullName: fullName,
+          email: email,
+          role: 'doctor'
         });
+
+        // הפניה לדף הבית של רופאים
+        window.location.href = 'HomeDoctors.html';
+      } catch (error) {
+        // טיפול בשגיאות הרשמה
+        alert('Error: ' + error.message);
+      }
     });
   </script>
 </body>

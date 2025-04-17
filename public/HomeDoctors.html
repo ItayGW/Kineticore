@@ -1,65 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- הגדרות בסיסיות -->
   <meta charset="UTF-8">
+  <!-- הגדרות תצוגה למובייל -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Doctor Dashboard - KinetiCore</title>
+  <!-- קישור לספריות חיצוניות -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <!-- קישור לספריות Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script> 
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
   <script src="firebase.js"></script>
 </head>
 <body>
-  <!-- Background circles -->
+  <!-- אלמנטים דקורטיביים -->
   <div class="circle circle-1"></div>
   <div class="circle circle-2"></div>
   <div class="circle circle-3"></div>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #b2dfdb; z-index: 2;">
+  <!-- תפריט ניווט -->
+  <nav class="navbar navbar-expand-lg">
     <div class="container">
-      <a class="navbar-brand" href="HomeDoctors.html">KinetiCore</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <!-- לוגו ושם האתר -->
+      <a class="navbar-brand" href="#">KinetiCore</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
+      <!-- קישורי ניווט -->
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="patientList.html">Patient List</a></li>
-          <li class="nav-item"><a class="nav-link" href="addPatient.html">Add Patient</a></li>
-          <li class="nav-item"><a class="nav-link" href="index.html">Logout</a></li>
+          <li class="nav-item">
+            <a class="nav-link" href="patientList.html">Patient List</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="addPatient.html">Add Patient</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" id="logoutBtn">Logout</a>
+          </li>
         </ul>
       </div>
     </div>
   </nav>
 
-  <!-- Main Content -->
-  <div class="container py-5">
-    <div class="row">
-      <div class="col-md-12 text-center mb-4">
-        <h1>Welcome, Doctor</h1>
-        <p class="lead">Manage your patients and monitor their progress</p>
-      </div>
-    </div>
-
+  <!-- תוכן ראשי -->
+  <div class="container mt-5">
+    <!-- כותרת הדף -->
+    <h1 class="text-center mb-4">Doctor Dashboard</h1>
+    
+    <!-- כרטיסי מידע -->
     <div class="row justify-content-center">
+      <!-- כרטיס רשימת מטופלים -->
       <div class="col-md-4 mb-4">
-        <div class="card h-100 fade-in">
+        <div class="card h-100">
           <div class="card-body text-center">
-            <h3 class="card-title">Patient Management</h3>
-            <p class="card-text">View and manage your patients' accounts and data.</p>
-            <a href="patientList.html" class="btn btn-primary">Manage Patients</a>
+            <h3 class="card-title">Patient List</h3>
+            <p class="card-text">View and manage your patients</p>
+            <a href="patientList.html" class="btn btn-primary">View Patients</a>
           </div>
         </div>
       </div>
       
+      <!-- כרטיס הוספת מטופל -->
       <div class="col-md-4 mb-4">
-        <div class="card h-100 fade-in">
+        <div class="card h-100">
           <div class="card-body text-center">
-            <h3 class="card-title">Add New Patient</h3>
-            <p class="card-text">Create a new patient account and add them to your care.</p>
+            <h3 class="card-title">Add Patient</h3>
+            <p class="card-text">Add a new patient to your list</p>
             <a href="addPatient.html" class="btn btn-primary">Add Patient</a>
           </div>
         </div>
@@ -67,24 +78,38 @@
     </div>
   </div>
 
+  <!-- ספריית Bootstrap -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- קוד JavaScript -->
   <script>
-    // Check if user is logged in and is a doctor
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        const userRef = database.ref('users/' + user.uid);
+    // בדיקת התחברות משתמש
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        // אם המשתמש לא מחובר, העברה לדף ההתחברות
+        window.location.href = 'Login.html';
+      } else {
+        // בדיקה שהמשתמש הוא רופא
+        const userRef = firebase.database().ref('users/' + user.uid);
         userRef.once('value', (snapshot) => {
           const userData = snapshot.val();
-          if (userData.userType !== 'doctor') {
-            alert('Only doctors can access this page.');
+          if (!userData || userData.role !== 'doctor') {
+            // אם המשתמש אינו רופא, ניתוק והעברה לדף ההתחברות
+            firebase.auth().signOut();
             window.location.href = 'Login.html';
           }
         });
-      } else {
-        window.location.href = 'Login.html';
       }
     });
-  </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    // טיפול בלחיצה על כפתור התנתקות
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      firebase.auth().signOut().then(() => {
+        window.location.href = 'index.html';
+      }).catch((error) => {
+        alert('Error: ' + error.message);
+      });
+    });
+  </script>
 </body>
 </html>
