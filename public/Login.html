@@ -1,97 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- הגדרות בסיסיות -->
   <meta charset="UTF-8">
-  <!-- הגדרות תצוגה למובייל -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - KinetiCore</title>
-  <!-- קישור לספריות חיצוניות -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <!-- קישור לספריות Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
   <script src="firebase.js"></script>
 </head>
 <body>
-  <!-- אלמנטים דקורטיביים -->
-  <div class="circle circle-1"></div>
-  <div class="circle circle-2"></div>
-  <div class="circle circle-3"></div>
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">KinetiCore</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="signup.html">Sign Up</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
-  <!-- תוכן ראשי -->
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <!-- כרטיס התחברות -->
-        <div class="card">
-          <div class="card-body">
-            <!-- כותרת -->
-            <h2 class="text-center mb-4">Login</h2>
-            
-            <!-- טופס התחברות -->
+  <div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+      <div class="col-md-6 col-lg-5">
+        <div class="card fade-in">
+          <div class="card-body p-4">
+            <h3 class="text-center mb-4">Welcome Back</h3>
             <form id="loginForm">
-              <!-- שדה אימייל -->
               <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
+                <label for="email" class="form-label">Email address</label>
                 <input type="email" class="form-control" id="email" required>
               </div>
-              
-              <!-- שדה סיסמה -->
               <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
                 <input type="password" class="form-control" id="password" required>
               </div>
-              
-              <!-- כפתור התחברות -->
-              <button type="submit" class="btn btn-primary w-100">Login</button>
+              <div class="mb-4 form-check">
+                <input type="checkbox" class="form-check-input" id="rememberMe">
+                <label class="form-check-label" for="rememberMe">Remember me</label>
+              </div>
+              <button type="submit" class="btn btn-primary w-100 mb-3" id="loginButton">
+                <span class="button-text">Login</span>
+                <div class="spinner-border spinner-border-sm d-none" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </button>
+              <div class="text-center">
+                <p class="mb-0">Don't have an account? <a href="signup.html" class="text-primary">Sign up here</a></p>
+              </div>
             </form>
-            
-            <!-- קישור להרשמה -->
-            <div class="text-center mt-3">
-              <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
-            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ספריית Bootstrap -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- קוד JavaScript -->
   <script>
-    // טיפול בשליחת טופס ההתחברות
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      
-      // קבלת ערכים מהטופס
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      
-      // התחברות למשתמש
-      firebase.auth().signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          // בדיקת סוג המשתמש
-          const user = userCredential.user;
-          return firebase.database().ref('users/' + user.uid).once('value');
-        })
-        .then((snapshot) => {
-          const userData = snapshot.val();
-          // העברה לדף הבית המתאים לפי סוג המשתמש
-          if (userData.role === 'doctor') {
-            window.location.href = 'HomeDoctors.html';
-          } else {
-            window.location.href = 'HomePatients.html';
-          }
-        })
-        .catch((error) => {
-          alert('Error: ' + error.message);
-        });
+    // Wait for Firebase to initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      const loginForm = document.getElementById('loginForm');
+      const loginButton = document.getElementById('loginButton');
+      const buttonText = loginButton.querySelector('.button-text');
+      const spinner = loginButton.querySelector('.spinner-border');
+
+      // Check if Firebase is properly initialized
+      if (typeof firebase === 'undefined') {
+        console.error('Firebase not loaded');
+        alert('Error: Firebase not loaded. Please refresh the page.');
+        return;
+      }
+
+      loginForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        if (!email || !password) {
+          alert('Please fill in all fields');
+          return;
+        }
+
+        // Show loading state
+        loginButton.disabled = true;
+        buttonText.textContent = 'Logging in...';
+        spinner.classList.remove('d-none');
+
+        try {
+          await loginUser(email, password);
+          // Redirect will happen in the loginUser function
+        } catch (error) {
+          console.error('Login error:', error);
+          alert('Login failed: ' + error.message);
+          
+          // Reset button state
+          loginButton.disabled = false;
+          buttonText.textContent = 'Login';
+          spinner.classList.add('d-none');
+        }
+      });
     });
   </script>
 </body>

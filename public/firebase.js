@@ -133,81 +133,32 @@ function signUpDoctor(email, password, name, medicalLicense, specialization) {
 }
 
 // יצירת חשבון מטופל
-function createPatientAccount(email, password, name, doctorId) {
+function createPatientAccount(email, password, fullName, doctorId) {
   return new Promise((resolve, reject) => {
-    // הוספת המטופל לרשימת המטופלים של הרופא
-    database.ref('users/' + doctorId + '/patients').once('value')
-      .then((snapshot) => {
-        const patients = snapshot.val() || {};
-        const tempPatientId = 'temp_' + Date.now(); // מזהה זמני
-        patients[tempPatientId] = {
-          name: name,
+    // אם doctorId לא מוגדר, יש להפסיק
+    if (!doctorId) {
+      reject(new Error('Doctor ID is missing'));
+      return;
+    }
+
+    // יצירת חשבון מטופל
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        const patientUser = userCredential.user;
+
+        // שמירת נתוני המטופל במסד הנתונים כולל doctorId
+        return firebase.database().ref('users/' + patientUser.uid).set({
+          name: fullName,
           email: email,
-          status: 'pending'
-        };
-        return database.ref('users/' + doctorId + '/patients').set(patients)
-          .then(() => tempPatientId);
-      })
-      .then((tempPatientId) => {
-        // יצירת מופע אימות זמני ליצירת המטופל
-        const tempApp = firebase.initializeApp(firebaseConfig, 'temp');
-        const tempAuth = tempApp.auth();
-        
-        // יצירת חשבון המטופל
-        return tempAuth.createUserWithEmailAndPassword(email, password)
-          .then((userCredential) => {
-            const patientUser = userCredential.user;
-            
-            // עדכון נתוני המטופל
-            return database.ref('users/' + patientUser.uid).set({
-              name: name,
-              email: email,
-              userType: 'patient',
-              doctorId: doctorId
-            })
-            .then(() => {
-              // עדכון רשימת המטופלים של הרופא עם המזהה האמיתי
-              return database.ref('users/' + doctorId + '/patients').once('value')
-                .then((snapshot) => {
-                  const patients = snapshot.val();
-                  if (patients && patients[tempPatientId]) {
-                    delete patients[tempPatientId];
-                    patients[patientUser.uid] = {
-                      name: name,
-                      email: email
-                    };
-                    return database.ref('users/' + doctorId + '/patients').set(patients);
-                  }
-                });
-            })
-            .then(() => {
-              // התנתקות ומחיקת מופע האימות הזמני
-              return tempAuth.signOut()
-                .then(() => {
-                  tempApp.delete();
-                });
-            });
-          });
+          userType: 'patient',
+          doctorId: doctorId  // שמירת doctorId
+        });
       })
       .then(() => {
-        resolve();
+        resolve(); // הצלחה בהוספת המטופל
       })
       .catch((error) => {
-        // ניקוי רשומת המטופל הזמנית במקרה של שגיאה
-        database.ref('users/' + doctorId + '/patients').once('value')
-          .then((snapshot) => {
-            const patients = snapshot.val();
-            if (patients) {
-              Object.keys(patients).forEach(key => {
-                if (key.startsWith('temp_')) {
-                  delete patients[key];
-                }
-              });
-              return database.ref('users/' + doctorId + '/patients').set(patients);
-            }
-          })
-          .catch(() => {});
-        reject(error);
+        reject(error); // טיפול בשגיאה
       });
   });
 }

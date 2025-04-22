@@ -1,31 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- הגדרות בסיסיות -->
   <meta charset="UTF-8">
-  <!-- הגדרות תצוגה למובייל -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Monitor - KinetiCore</title>
-  <!-- קישור לספריות חיצוניות -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <!-- קישור לספריות Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script> 
   <script src="firebase.js"></script>
 </head>
 <body>
-  <!-- תפריט ניווט -->
   <nav class="navbar navbar-expand-lg">
     <div class="container">
-      <!-- לוגו ושם האתר -->
       <a class="navbar-brand" href="HomePatients.html">KinetiCore</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <!-- קישורי ניווט -->
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item"><a class="nav-link" href="Messages.html">Messages</a></li>
@@ -35,11 +28,9 @@
     </div>
   </nav>
 
-  <!-- תוכן ראשי -->
   <div class="container py-5">
     <div class="row">
       <div class="col-md-12 text-center mb-4">
-        <!-- כותרת -->
         <h1>Live Health Monitor</h1>
         <p class="lead">Real-time health metrics and sensor data</p>
       </div>
@@ -47,13 +38,10 @@
 
     <div class="row justify-content-center">
       <div class="col-md-8">
-        <!-- כרטיס ניטור -->
         <div class="card fade-in">
           <div class="card-body">
-            <!-- שורה ראשונה - מדדים חיוניים -->
             <div class="row">
               <div class="col-md-6 mb-3">
-                <!-- כרטיס דופק -->
                 <div class="card">
                   <div class="card-body">
                     <h5 class="card-title">Heart Rate</h5>
@@ -62,7 +50,6 @@
                 </div>
               </div>
               <div class="col-md-6 mb-3">
-                <!-- כרטיס ריווי חמצן -->
                 <div class="card">
                   <div class="card-body">
                     <h5 class="card-title">SpO2</h5>
@@ -71,14 +58,12 @@
                 </div>
               </div>
             </div>
-            <!-- שורה שנייה - ניתוח תנועה -->
             <div class="row">
               <div class="col-md-12">
                 <div class="card">
                   <div class="card-body">
                     <h5 class="card-title">Movement Analysis</h5>
                     <div class="row">
-                      <!-- זוויות ציר X, Y, Z -->
                       <div class="col-md-4">
                         <p class="card-text" id="angleX">X-Axis Angle: Loading...</p>
                       </div>
@@ -90,7 +75,6 @@
                       </div>
                     </div>
                     <div class="row mt-2">
-                      <!-- זווית כוללת -->
                       <div class="col-12">
                         <p class="card-text" id="totalAngle">Total Angle Change: Loading...</p>
                       </div>
@@ -99,7 +83,6 @@
                 </div>
               </div>
             </div>
-            <!-- כפתור הקלטה -->
             <div class="row mt-4">
               <div class="col-12 text-center">
                 <button id="toggleRecording" class="btn btn-primary">
@@ -116,24 +99,22 @@
     </div>
   </div>
 
-  <!-- קוד JavaScript -->
   <script>
-    // משתנים גלובליים
     let curr = 0;
     let userRef;
     let prevAccel = { x: 0, y: 0, z: 0 };
     let lastUpdateTime = Date.now();
 
-    // חישוב זווית בין שני וקטורים
+    // Function to calculate angle between two vectors
     function calculateAngle(v1, v2) {
       const dotProduct = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
       const magnitude1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
       const magnitude2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z);
       const cosTheta = dotProduct / (magnitude1 * magnitude2);
-      return Math.acos(cosTheta) * (180 / Math.PI); // המרה למעלות
+      return Math.acos(cosTheta) * (180 / Math.PI); // Convert to degrees
     }
 
-    // בדיקת התחברות משתמש
+    // Check if user is logged in and is a patient
     auth.onAuthStateChanged((user) => {
       if (user) {
         userRef = database.ref('users/' + user.uid);
@@ -143,18 +124,17 @@
             alert('Only patients can access this page.');
             window.location.href = 'Login.html';
           } else {
-            // הגדרת מאזין לנתונים בזמן אמת
-            const sensorRef = database.ref('users/' + user.uid + '/sensorData');
+            // Set up real-time data listener
+            const sensorRef = database.ref('users/' + user.uid + '/sensorData/liveData');
             sensorRef.on('value', (snapshot) => {
               const data = snapshot.val();
               if (data) {
-                // עדכון מדדים חיוניים
                 document.getElementById('heartRate').textContent = data.heart_rate || 'N/A';
                 document.getElementById('spo2').textContent = data.spo2 || 'N/A';
 
-                // חישוב שינויים בזוויות
+                // Calculate angle changes
                 const currentTime = Date.now();
-                const timeDiff = (currentTime - lastUpdateTime) / 1000; // המרה לשניות
+                const timeDiff = (currentTime - lastUpdateTime) / 1000; // Convert to seconds
                 
                 if (timeDiff > 0) {
                   const currentAccel = {
@@ -163,35 +143,35 @@
                     z: parseFloat(data.accel_z) || 0
                   };
 
-                  // חישוב שינוי בתאוצה
+                  // Calculate change in acceleration
                   const deltaAccel = {
                     x: currentAccel.x - prevAccel.x,
                     y: currentAccel.y - prevAccel.y,
                     z: currentAccel.z - prevAccel.z
                   };
 
-                  // חישוב זוויות
+                  // Calculate angles
                   const angleX = Math.atan2(deltaAccel.y, deltaAccel.z) * (180 / Math.PI);
                   const angleY = Math.atan2(deltaAccel.x, deltaAccel.z) * (180 / Math.PI);
                   const angleZ = Math.atan2(deltaAccel.x, deltaAccel.y) * (180 / Math.PI);
 
-                  // חישוב זווית כוללת
+                  // Calculate total angle change
                   const totalAngle = calculateAngle(prevAccel, currentAccel);
 
-                  // עדכון התצוגה
+                  // Update display
                   document.getElementById('angleX').textContent = `X-Axis Angle: ${angleX.toFixed(2)}°`;
                   document.getElementById('angleY').textContent = `Y-Axis Angle: ${angleY.toFixed(2)}°`;
                   document.getElementById('angleZ').textContent = `Z-Axis Angle: ${angleZ.toFixed(2)}°`;
                   document.getElementById('totalAngle').textContent = `Total Angle Change: ${totalAngle.toFixed(2)}°`;
 
-                  // עדכון ערכים קודמים
+                  // Update previous values
                   prevAccel = currentAccel;
                   lastUpdateTime = currentTime;
                 }
               }
             });
 
-            // קבלת ערך curr התחלתי
+            // Get initial curr value
             userRef.once('value', (snapshot) => {
               const data = snapshot.val();
               curr = data.curr || 0;
@@ -204,20 +184,20 @@
       }
     });
 
-    // טיפול בלחיצה על כפתור ההקלטה
+    // Handle recording toggle
     document.getElementById('toggleRecording').addEventListener('click', () => {
       const button = document.getElementById('toggleRecording');
       const buttonText = button.querySelector('.button-text');
       const spinner = button.querySelector('.spinner-border');
       
-      // הצגת מצב טעינה
+      // Show loading state
       button.disabled = true;
       spinner.classList.remove('d-none');
       
-      // החלפת מצב ההקלטה
+      // Toggle curr value
       curr = curr === 0 ? 1 : 0;
       
-      // עדכון Firebase
+      // Update Firebase
       userRef.update({ curr })
         .then(() => {
           updateButtonState();
@@ -227,13 +207,12 @@
           alert('Failed to update recording state. Please try again.');
         })
         .finally(() => {
-          // הסתרת מצב טעינה
+          // Hide loading state
           button.disabled = false;
           spinner.classList.add('d-none');
         });
     });
 
-    // עדכון מצב הכפתור
     function updateButtonState() {
       const button = document.getElementById('toggleRecording');
       const buttonText = button.querySelector('.button-text');
@@ -250,7 +229,6 @@
     }
   </script>
 
-  <!-- ספריית Bootstrap -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

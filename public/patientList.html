@@ -1,145 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- הגדרות בסיסיות -->
   <meta charset="UTF-8">
-  <!-- הגדרות תצוגה למובייל -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Patient List - KinetiCore</title>
-  <!-- קישור לספריות חיצוניות -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <!-- קישור לספריות Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script> 
   <script src="firebase.js"></script>
 </head>
 <body>
-  <!-- אלמנטים דקורטיביים -->
-  <div class="circle circle-1"></div>
-  <div class="circle circle-2"></div>
-  <div class="circle circle-3"></div>
-
-  <!-- תפריט ניווט -->
   <nav class="navbar navbar-expand-lg">
     <div class="container">
-      <!-- לוגו ושם האתר -->
       <a class="navbar-brand" href="HomeDoctors.html">KinetiCore</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <!-- קישורי ניווט -->
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link active" href="patientList.html">Patients</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="addPatient.html">Add Patient</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="Messages.html">Messages</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#" id="logoutBtn">Logout</a>
-          </li>
+          <li class="nav-item"><a class="nav-link" href="Messages.html">Messages</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html">Logout</a></li>
         </ul>
       </div>
     </div>
   </nav>
 
-  <!-- תוכן ראשי -->
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-10">
-        <!-- כותרת -->
-        <h1 class="text-center mb-4">Patient List</h1>
-        
-        <!-- כרטיס רשימת מטופלים -->
-        <div class="card">
-          <div class="card-body">
-            <!-- טבלת מטופלים -->
-            <div class="table-responsive">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Last Login</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="patientList">
-                  <!-- רשימת המטופלים תוכנס כאן דרך JavaScript -->
-                </tbody>
-              </table>
-            </div>
-          </div>
+  <div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>My Patients</h2>
+      <a href="addPatient.html" class="btn btn-primary">Add New Patient</a>
+    </div>
+    
+    <div class="card fade-in">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Patient Name</th>
+                <th>Email</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="patientsTableBody">
+              <!-- Patient list will be populated here -->
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ספריית Bootstrap -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- קוד JavaScript -->
   <script>
-    // בדיקת התחברות משתמש
-    firebase.auth().onAuthStateChanged((user) => {
-      if (!user) {
-        // אם המשתמש לא מחובר, העברה לדף ההתחברות
-        window.location.href = 'Login.html';
-      } else {
-        // בדיקה שהמשתמש הוא רופא
-        const userRef = firebase.database().ref('users/' + user.uid);
+    // Check if user is logged in and is a doctor
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        const userRef = database.ref('users/' + user.uid);
         userRef.once('value', (snapshot) => {
           const userData = snapshot.val();
-          if (!userData || userData.role === 'patient') {
-            // אם המשתמש אינו רופא, ניתוק והעברה לדף ההתחברות
-            firebase.auth().signOut();
+          if (userData.userType !== 'doctor') {
+            alert('Only doctors can access this page.');
             window.location.href = 'Login.html';
           } else {
-            // טעינת רשימת המטופלים
-            loadPatientList();
+            // Load the doctor's patients
+            loadPatients();
           }
         });
+      } else {
+        window.location.href = 'Login.html';
       }
     });
 
-    // טעינת רשימת המטופלים
-    function loadPatientList() {
-      const patientsRef = firebase.database().ref('users');
-      patientsRef.orderByChild('role').equalTo('patient').on('value', (snapshot) => {
-        const patientList = document.getElementById('patientList');
-        patientList.innerHTML = '';
-        
-        snapshot.forEach((childSnapshot) => {
-          const patient = childSnapshot.val();
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${patient.fullName}</td>
-            <td>${patient.email}</td>
-            <td>${patient.lastLogin ? new Date(patient.lastLogin).toLocaleString() : 'Never'}</td>
-            <td>
-              <a href="PatientData.html?id=${childSnapshot.key}" class="btn btn-primary btn-sm">View Data</a>
-            </td>
-          `;
-          patientList.appendChild(row);
-        });
+    function loadPatients() {
+      const user = auth.currentUser;
+      if (user) {
+        getDoctorPatients(user.uid)
+          .then((patients) => {
+            const tableBody = document.getElementById('patientsTableBody');
+            tableBody.innerHTML = '';
+            
+            patients.forEach((patient) => {
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                <td>${patient.name}</td>
+                <td>${patient.email}</td>
+                <td>
+                  <a href="PatientData.html?id=${patient.id}" class="btn btn-primary btn-sm">View Data</a>
+                  <button class="btn btn-info btn-sm" onclick="showMessageModal('${patient.id}', '${patient.name}')">Message</button>
+                </td>
+              `;
+              tableBody.appendChild(row);
+            });
+          })
+          .catch((error) => {
+            console.error('Error loading patients:', error);
+            alert('Error loading patients: ' + error.message);
+          });
+      }
+    }
+
+    // Add message modal
+    function showMessageModal(patientId, patientName) {
+      const modal = document.createElement('div');
+      modal.className = 'modal fade';
+      modal.id = 'messageModal';
+      modal.innerHTML = `
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Send Message to ${patientName}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <textarea class="form-control" id="messageText" rows="3" placeholder="Type your message..."></textarea>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" onclick="sendMessageToPatient('${patientId}')">Send</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      const messageModal = new bootstrap.Modal(modal);
+      messageModal.show();
+      
+      // Remove modal from DOM when hidden
+      modal.addEventListener('hidden.bs.modal', function () {
+        document.body.removeChild(modal);
       });
     }
 
-    // טיפול בלחיצה על כפתור התנתקות
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      firebase.auth().signOut().then(() => {
-        window.location.href = 'index.html';
-      }).catch((error) => {
-        alert('Error: ' + error.message);
-      });
-    });
+    function sendMessageToPatient(patientId) {
+      const messageText = document.getElementById('messageText').value.trim();
+      if (!messageText) {
+        alert('Please enter a message');
+        return;
+      }
+      
+      sendMessage(patientId, messageText)
+        .then(() => {
+          alert('Message sent successfully');
+          bootstrap.Modal.getInstance(document.getElementById('messageModal')).hide();
+        })
+        .catch((error) => {
+          alert('Error sending message: ' + error.message);
+        });
+    }
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html> 

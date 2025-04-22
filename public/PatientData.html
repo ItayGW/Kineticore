@@ -1,103 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- הגדרות בסיסיות -->
-  <meta charset="UTF-8">
-  <!-- הגדרות תצוגה למובייל -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Patient Data - KinetiCore</title>
-  <!-- קישור לספריות חיצוניות -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-  <!-- קישור לספריות Firebase -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Movement History - KinetiCore</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
   <script src="firebase.js"></script>
 </head>
 <body>
-  <!-- אלמנטים דקורטיביים -->
-  <div class="circle circle-1"></div>
-  <div class="circle circle-2"></div>
-  <div class="circle circle-3"></div>
-
-  <!-- תוכן ראשי -->
   <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        <!-- כותרת -->
-        <h1 class="text-center mb-4">Patient Data</h1>
-        
-        <!-- כרטיס נתוני מטופל -->
-        <div class="card mb-4">
-          <div class="card-body">
-            <!-- טבלת נתונים -->
-            <div class="table-responsive">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Metric</th>
-                    <th>Value</th>
-                    <th>Timestamp</th>
-                  </tr>
-                </thead>
-                <tbody id="patientData">
-                  <!-- נתונים יוכנסו כאן דרך JavaScript -->
-                </tbody>
-              </table>
-            </div>
-          </div>
+    <h1 class="text-center mb-4">Movement History</h1>
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Session</th>
+                <th>ΔX</th>
+                <th>ΔY</th>
+                <th>ΔZ</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+              </tr>
+            </thead>
+            <tbody id="sessionData">
+              <!-- Data will be inserted by JS -->
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ספריית Bootstrap -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- קוד JavaScript -->
   <script>
-    // בדיקת התחברות משתמש
-    firebase.auth().onAuthStateChanged((user) => {
-      if (!user) {
-        // אם המשתמש לא מחובר, העברה לדף ההתחברות
-        window.location.href = 'Login.html';
-      } else {
-        // טעינת נתוני המטופל
-        loadPatientData(user.uid);
-      }
-    });
+    // Function to get the UID from the URL query string
+    function getUidFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('uid');
+    }
 
-    // טעינת נתוני המטופל
-    function loadPatientData(patientId) {
-      const patientRef = firebase.database().ref('patients/' + patientId);
-      patientRef.on('value', (snapshot) => {
+    // Load session history for the user based on the UID from URL
+    function loadSessionHistory(uid) {
+      const ref = firebase.database().ref(`users/${uid}/sensorData/recordings`);
+      ref.once('value', (snapshot) => {
         const data = snapshot.val();
-        const tableBody = document.getElementById('patientData');
-        tableBody.innerHTML = '';
-        
+        console.log('Fetched data:', data); // Debugging log
+
+        const tbody = document.getElementById('sessionData');
+        tbody.innerHTML = '';
+
         if (data) {
-          // הוספת נתונים לטבלה
-          Object.entries(data).forEach(([timestamp, metrics]) => {
-            Object.entries(metrics).forEach(([metric, value]) => {
-              const row = document.createElement('tr');
-              row.innerHTML = `
-                <td>${metric}</td>
-                <td>${value}</td>
-                <td>${new Date(parseInt(timestamp)).toLocaleString()}</td>
-              `;
-              tableBody.appendChild(row);
+          Object.entries(data).forEach(([sessionId, session]) => {
+            console.log('Processing session:', sessionId); // Debugging log
+
+            // Log the session content to check its structure
+            console.log('Session Content:', session);
+
+            // Iterate over the session data (entries inside the session ID)
+            Object.entries(session).forEach(([entryKey, entryVals], index, entries) => {
+              // Log the session entries for debugging
+              console.log(`Processing entry ${entryKey}`, entryVals);
+
+              if (index === 0 || index === entries.length - 1) {
+                // Only use the first and the last entry for calculation
+                const startVals = entries[0][1]; // First entry
+                const endVals = entries[entries.length - 1][1]; // Last entry
+
+                // Ensure that values are valid numbers before calculation
+                if (startVals && endVals) {
+                  // Access the sensor data from the array entries
+                  const startData = startVals[0]; // Assuming the data is in the first object of the array
+                  const endData = endVals[endVals.length - 1]; // Last object in the array for the end session
+
+                  if (!isNaN(startData.accel_x) && !isNaN(startData.accel_y) && !isNaN(startData.accel_z) && 
+                      !isNaN(endData.accel_x) && !isNaN(endData.accel_y) && !isNaN(endData.accel_z)) {
+
+                    // Calculate deltas if we have both start and end entries
+                    const deltaX = (endData.accel_x - startData.accel_x).toFixed(2);
+                    const deltaY = (endData.accel_y - startData.accel_y).toFixed(2);
+                    const deltaZ = (endData.accel_z - startData.accel_z).toFixed(2);
+
+                    // Log the calculated deltas
+                    console.log(`Delta X: ${deltaX}, Delta Y: ${deltaY}, Delta Z: ${deltaZ}`);
+
+                    // Add row to table
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                      <td>${sessionId}</td>
+                      <td>${deltaX}</td>
+                      <td>${deltaY}</td>
+                      <td>${deltaZ}</td>
+                      <td>${startData.timestamp || 'N/A'}</td>
+                      <td>${endData.timestamp || 'N/A'}</td>
+                    `;
+                    tbody.appendChild(row);
+                  } else {
+                    console.log('Invalid data for delta calculation:', { startData, endData });
+                  }
+                }
+              }
             });
           });
         } else {
-          // הודעת אי-קיום נתונים
           const row = document.createElement('tr');
-          row.innerHTML = '<td colspan="3" class="text-center">No data available</td>';
-          tableBody.appendChild(row);
+          row.innerHTML = '<td colspan="6" class="text-center">No movement history found.</td>';
+          tbody.appendChild(row);
         }
       });
     }
+
+    // Ensure user is logged in, then fetch data
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = 'Login.html';
+      } else {
+        const uidFromURL = getUidFromURL(); 
+        console.log('UID from URL:', uidFromURL);  
+        loadSessionHistory(uidFromURL); 
+      }
+    });
   </script>
 </body>
 </html>
