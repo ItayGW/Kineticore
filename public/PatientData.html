@@ -13,6 +13,26 @@
   <script src="firebase.js"></script>
 </head>
 <body>
+
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light" style="background-color: #b2dfdb; z-index: 2;">
+  <div class="container">
+    <a class="navbar-brand" href="HomeDoctors.html">KinetiCore</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="patientList.html">Patient List</a></li>
+        <li class="nav-item"><a class="nav-link" href="addPatient.html">Add Patient</a></li>
+        <li class="nav-item"><a class="nav-link" href="index.html">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
   <div class="container mt-5">
     <h1 class="text-center mb-4">Movement History</h1>
     <div class="card">
@@ -22,9 +42,7 @@
             <thead>
               <tr>
                 <th>Session</th>
-                <th>ΔX</th>
-                <th>ΔY</th>
-                <th>ΔZ</th>
+                <th>Change in Angle (°)</th>
                 <th>Start Time</th>
                 <th>End Time</th>
               </tr>
@@ -40,12 +58,16 @@
 
   <script>
     // Function to get the UID from the URL query string
-    function getUidFromURL() {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('uid');
-    }
+function getUidFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const uid = urlParams.get('id');  // Update 'uid' to 'id' based on the actual query parameter
+  console.log("Full URL:", window.location.href);  // Debugging full URL
+  console.log("Extracted UID from URL:", uid);  // Debugging UID extraction
+  return uid;
+}
 
-    // Load session history for the user based on the UID from URL
+
+    // Load session history for the patient based on the UID from the URL
     function loadSessionHistory(uid) {
       const ref = firebase.database().ref(`users/${uid}/sensorData/recordings`);
       ref.once('value', (snapshot) => {
@@ -64,38 +86,38 @@
 
             // Iterate over the session data (entries inside the session ID)
             Object.entries(session).forEach(([entryKey, entryVals], index, entries) => {
-              // Log the session entries for debugging
               console.log(`Processing entry ${entryKey}`, entryVals);
 
               if (index === 0 || index === entries.length - 1) {
-                // Only use the first and the last entry for calculation
                 const startVals = entries[0][1]; // First entry
                 const endVals = entries[entries.length - 1][1]; // Last entry
 
-                // Ensure that values are valid numbers before calculation
                 if (startVals && endVals) {
-                  // Access the sensor data from the array entries
                   const startData = startVals[0]; // Assuming the data is in the first object of the array
                   const endData = endVals[endVals.length - 1]; // Last object in the array for the end session
 
                   if (!isNaN(startData.accel_x) && !isNaN(startData.accel_y) && !isNaN(startData.accel_z) && 
                       !isNaN(endData.accel_x) && !isNaN(endData.accel_y) && !isNaN(endData.accel_z)) {
 
-                    // Calculate deltas if we have both start and end entries
+                    // Calculate deltas and angle change
                     const deltaX = (endData.accel_x - startData.accel_x).toFixed(2);
                     const deltaY = (endData.accel_y - startData.accel_y).toFixed(2);
                     const deltaZ = (endData.accel_z - startData.accel_z).toFixed(2);
 
-                    // Log the calculated deltas
-                    console.log(`Delta X: ${deltaX}, Delta Y: ${deltaY}, Delta Z: ${deltaZ}`);
+                    // Calculate angle change in 3D space (using arccosine of dot product)
+                    const initialMagnitude = Math.sqrt(Math.pow(startData.accel_x, 2) + Math.pow(startData.accel_y, 2) + Math.pow(startData.accel_z, 2));
+                    const finalMagnitude = Math.sqrt(Math.pow(endData.accel_x, 2) + Math.pow(endData.accel_y, 2) + Math.pow(endData.accel_z, 2));
+                    const dotProduct = (startData.accel_x * endData.accel_x) + (startData.accel_y * endData.accel_y) + (startData.accel_z * endData.accel_z);
+                    const angleRad = Math.acos(dotProduct / (initialMagnitude * finalMagnitude));
+                    const angleDeg = (angleRad * 180 / Math.PI).toFixed(2);
+
+                    console.log(`Angle Change: ${angleDeg}°`);
 
                     // Add row to table
                     const row = document.createElement('tr');
                     row.innerHTML = `
                       <td>${sessionId}</td>
-                      <td>${deltaX}</td>
-                      <td>${deltaY}</td>
-                      <td>${deltaZ}</td>
+                      <td>${angleDeg}°</td>
                       <td>${startData.timestamp || 'N/A'}</td>
                       <td>${endData.timestamp || 'N/A'}</td>
                     `;
@@ -109,20 +131,25 @@
           });
         } else {
           const row = document.createElement('tr');
-          row.innerHTML = '<td colspan="6" class="text-center">No movement history found.</td>';
+          row.innerHTML = '<td colspan="4" class="text-center">No movement history found.</td>';
           tbody.appendChild(row);
         }
       });
     }
 
-    // Ensure user is logged in, then fetch data
+    // Ensure user is logged in and then fetch data
     firebase.auth().onAuthStateChanged((user) => {
       if (!user) {
-        window.location.href = 'Login.html';
+        window.location.href = 'Login.html';  // Redirect to login if no user is authenticated
       } else {
-        const uidFromURL = getUidFromURL(); 
-        console.log('UID from URL:', uidFromURL);  
-        loadSessionHistory(uidFromURL); 
+        const uidFromURL = getUidFromURL();
+        console.log('UID from URL:', uidFromURL);
+
+        if (!uidFromURL) {
+          alert('User ID not provided in URL.');
+        } else {
+          loadSessionHistory(uidFromURL);  // Load session history for the patient
+        }
       }
     });
   </script>

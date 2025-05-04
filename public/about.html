@@ -1,36 +1,35 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
-  <!-- הגדרות בסיסיות -->
   <meta charset="UTF-8">
-  <!-- הגדרות תצוגה למובייל -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About - KinetiCore</title>
-  <!-- קישור לספריות חיצוניות -->
+
+  <!-- External Libraries -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <!-- קישור לספריות Firebase -->
+
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
   <script src="firebase.js"></script>
+
 </head>
 <body>
-  <!-- אלמנטים דקורטיביים -->
+  <!-- Decorative Circles -->
   <div class="circle circle-1"></div>
   <div class="circle circle-2"></div>
   <div class="circle circle-3"></div>
 
-  <!-- תפריט ניווט -->
+  <!-- Navigation -->
   <nav class="navbar navbar-expand-lg">
     <div class="container">
-      <!-- לוגו ושם האתר -->
       <a class="navbar-brand" href="index.html">KinetiCore</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <!-- קישורי ניווט -->
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
@@ -47,35 +46,64 @@
     </div>
   </nav>
 
-  <!-- תוכן ראשי -->
+  <!-- Main Content -->
   <div class="container mt-5">
     <div class="row justify-content-center">
       <div class="col-md-8">
-        <!-- כותרת -->
         <h1 class="text-center mb-4">About KinetiCore</h1>
-        
-        <!-- סעיף מידע -->
+
+        <!-- Mission Section -->
         <div class="card mb-4">
           <div class="card-body">
             <h2 class="card-title">Our Mission</h2>
             <p class="card-text">KinetiCore is dedicated to providing innovative remote health monitoring solutions that connect patients with their healthcare providers.</p>
           </div>
         </div>
-        
-        <!-- סעיף תכונות -->
-        <div class="card mb-4">
-          <div class="card-body">
-            <h2 class="card-title">Features</h2>
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item">Real-time health monitoring</li>
-              <li class="list-group-item">Secure patient-doctor communication</li>
-              <li class="list-group-item">Comprehensive health data tracking</li>
-              <li class="list-group-item">User-friendly interface</li>
-            </ul>
+
+        <!-- Features Section -->
+        <div class="row justify-content-center mb-5">
+          <div class="col-md-6 col-lg-3 mb-4">
+            <div class="about-feature-card card">
+              <img src="Monitor.jpg" class="about-feature-img card-img-top" alt="Real-time Monitoring">
+              <div class="about-feature-body card-body text-center">
+                <h5 class="card-title">Real-Time Monitoring</h5>
+                <p class="card-text">Monitor patients' health metrics in real time, ensuring timely interventions and better outcomes.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-3 mb-4">
+            <div class="about-feature-card card">
+              <img src="Doc.jpg" class="about-feature-img card-img-top" alt="Doctor-Patient Communication">
+              <div class="about-feature-body card-body text-center">
+                <h5 class="card-title">Seamless Communication</h5>
+                <p class="card-text">Easily connect with doctors for consultations and updates on health progress, no matter where you are.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-3 mb-4">
+            <div class="about-feature-card card">
+              <img src="Health.jpg" class="about-feature-img card-img-top" alt="Health Tracking">
+              <div class="about-feature-body card-body text-center">
+                <h5 class="card-title">Comprehensive Health Tracking</h5>
+                <p class="card-text">Track a wide range of health metrics, from heart rate to oxygen levels, all in one place.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-3 mb-4">
+            <div class="about-feature-card card">
+              <img src="UI.png" class="about-feature-img card-img-top" alt="User-Friendly Interface">
+              <div class="about-feature-body card-body text-center">
+                <h5 class="card-title">User-Friendly Interface</h5>
+                <p class="card-text">Navigate our platform effortlessly, whether you're a doctor or a patient, for a smooth experience.</p>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <!-- סעיף צור קשר -->
+
+        <!-- Contact Section -->
         <div class="card">
           <div class="card-body">
             <h2 class="card-title">Contact Us</h2>
@@ -86,26 +114,7 @@
     </div>
   </div>
 
-  <!-- ספריית Bootstrap -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- קוד JavaScript -->
-  <script>
-    // בדיקת התחברות משתמש
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user) {
-        // אם המשתמש מחובר, העברה לדף הבית המתאים
-        const userRef = firebase.database().ref('users/' + user.uid);
-        userRef.once('value', (snapshot) => {
-          const userData = snapshot.val();
-          if (userData.role === 'doctor') {
-            window.location.href = 'HomeDoctors.html';
-          } else {
-            window.location.href = 'HomePatients.html';
-          }
-        });
-      }
-    });
-  </script>
 </body>
-</html> 
+</html>

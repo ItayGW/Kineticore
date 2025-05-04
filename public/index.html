@@ -1,87 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- הגדרות בסיסיות -->
-<meta charset="UTF-8">
-<!-- הגדרות תצוגה למובייל -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>KinetiCore - Home</title>
-<!-- קישור לספריות חיצוניות -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<!-- קישור לספריות Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
-<script src="firebase.js"></script>
+  <!-- הגדרות בסיסיות -->
+  <meta charset="UTF-8">
+  <!-- הגדרות תצוגה למובייל -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KinetiCore - Home</title>
+  <!-- קישור לספריות חיצוניות -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <!-- קישור לספריות Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
+  <script src="firebase.js"></script>
 </head>
 <body class="d-flex flex-column min-vh-100">
-<!-- אלמנטים דקורטיביים -->
+
+<!-- Decorative Circles -->
 <div class="circle circle-1"></div>
 <div class="circle circle-2"></div>
 <div class="circle circle-3"></div>
 
-<!-- תפריט ניווט -->
+<!-- Navigation Bar -->
 <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #b2dfdb; z-index: 2;">
-<div class="container">
-<!-- לוגו ושם האתר -->
-<a class="navbar-brand" href="index.html">KinetiCore</a>
-<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-<span class="navbar-toggler-icon"></span>
-</button>
-<!-- קישורי ניווט -->
-<div class="collapse navbar-collapse" id="navbarNav">
-<ul class="navbar-nav ms-auto">
-<li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
-<li class="nav-item"><a class="nav-link" href="Login.html">Login</a></li>
-<li class="nav-item"><a class="nav-link" href="signup.html">Sign Up</a></li>
-</ul>
-</div>
-</div>
+  <div class="container">
+    <a class="navbar-brand" href="index.html">KinetiCore</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="Login.html">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="signup.html">Sign Up</a></li>
+      </ul>
+    </div>
+  </div>
 </nav>
 
-<!-- תוכן ראשי -->
+<!-- Main Content -->
 <div class="container py-5 flex-grow-1">
-<div class="row">
-<div class="col-12 text-center mb-4">
-<!-- כותרת ראשית -->
-<h1>Welcome to KinetiCore</h1>
-<!-- תיאור המערכת -->
-<p class="lead">
-Revolutionizing healthcare monitoring through real-time patient tracking and seamless doctor-patient communication.
-</p>
-</div>
+  <div class="row">
+    <div class="col-12 text-center mb-4">
+      <h1>Welcome to KinetiCore</h1>
+      <p class="lead">Revolutionizing healthcare monitoring through real-time patient tracking and seamless doctor-patient communication.</p>
+    </div>
+  </div>
+
+  <!-- For Doctors and Patients -->
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-4 mb-4">
+      <div class="card h-100 fade-in">
+        <div class="card-body text-center">
+          <h3 class="card-title">For Doctors</h3>
+          <p class="card-text">Monitor your patients' health data in real-time and provide better care.</p>
+          <a href="Login.html" class="btn btn-primary">Doctor Login</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4 mb-4">
+      <div class="card h-100 fade-in">
+        <div class="card-body text-center">
+          <h3 class="card-title">For Patients</h3>
+          <p class="card-text">Track your health metrics and stay connected with your doctor.</p>
+          <a href="Login.html" class="btn btn-primary">Patient Login</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Testimonials Section -->
+  <div class="row justify-content-center mb-5">
+    <div class="col-md-8 text-center">
+      <h2>What Our Users Say</h2>
+      <div class="row">
+        <div class="col-md-6">
+          <blockquote class="blockquote">
+            <p>"KinetiCore has truly changed the way I monitor my patients. It's easy to use and has improved the quality of care I provide." - Dr. Sarah T.</p>
+          </blockquote>
+        </div>
+        <div class="col-md-6">
+          <blockquote class="blockquote">
+            <p>"As a patient, I feel more connected with my doctor and more in control of my health." - John D.</p>
+          </blockquote>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Call to Action Section -->
+  <div class="row justify-content-center">
+    <div class="col-12 text-center">
+      <h3>Join the KinetiCore Community Today!</h3>
+      <p>Whether you're a healthcare provider or a patient, KinetiCore is here to make your healthcare experience better. Sign up now to get started!</p>
+      <a href="signup.html" class="btn btn-success">Get Started</a>
+    </div>
+  </div>
 </div>
 
-<div class="row justify-content-center">
-<div class="col-12 col-md-4 mb-4">
-<div class="card h-100 fade-in">
-<div class="card-body text-center">
-<h3 class="card-title">For Doctors</h3>
-<p class="card-text">Monitor your patients' health data in real-time and provide better care.</p>
-<a href="Login.html" class="btn btn-primary">Doctor Login</a>
-</div>
-</div>
-</div>
-
-<div class="col-12 col-md-4 mb-4">
-<div class="card h-100 fade-in">
-<div class="card-body text-center">
-<h3 class="card-title">For Patients</h3>
-<p class="card-text">Track your health metrics and stay connected with your doctor.</p>
-<a href="Login.html" class="btn btn-primary">Patient Login</a>
-</div>
-</div>
-</div>
-</div>
-</div>
-
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
-
-
-
